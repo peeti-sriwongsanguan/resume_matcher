@@ -3,7 +3,7 @@ CONDA_ACTIVATE := source $$(conda info --base)/etc/profile.d/conda.sh ; conda ac
 
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: build run test clean ensure_environment clean_env rebuild_env run_local test_local setup_env test_parser
+.PHONY: build run test clean ensure_environment clean_env rebuild_env run_local test_local setup_env test_parser test_job_scraper
 
 # Function to check if the environment exists and create it if it doesn't
 define ensure_environment
@@ -52,9 +52,10 @@ run_local: setup_env
 test_parser:
 	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && python -m tests.test_resume_parser
 
-test_local: setup_env test_parser
+test_local: setup_env test_parser test_job_scraper
 	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && PYTHONPATH=$(PYTHONPATH) pytest -v
 
-
+test_job_scraper:
+	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && python -m tests.test_job_scraper
 
 
