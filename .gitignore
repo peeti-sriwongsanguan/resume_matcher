@@ -1,1 +1,17 @@
 .idea
+
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.git
+
+uploads/
+
+venv/
+
+# Setup.py
+/setup.py
+
+

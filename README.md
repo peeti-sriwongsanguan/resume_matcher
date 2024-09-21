@@ -16,3 +16,25 @@ flowchart TD
     H --> B
     B -->|Shows match percentages| A
 ```
+
+## Project Structure
+
+```
+resume_matcher/
+│
+├── .dockerignore
+├── Dockerfile
+├── Makefile
+├── docker-compose.yml
+├── environment.yml
+├── requirements.txt
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── resume_parser.py
+│   ├── job_scraper.py
+│   └── matching_engine.py
+├── tests/
+│   └── test_main.py
+└── README.md
+```
