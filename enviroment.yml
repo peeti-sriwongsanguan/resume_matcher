@@ -1,0 +1,11 @@
+name: resume_matcher
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.9
+  - flask
+  - pytest
+  - pip
+  - pip:
+    - -r requirements.txt
