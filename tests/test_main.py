@@ -27,7 +27,7 @@ def test_file_upload(client):
             "contact_info": {"email": "test@example.com", "phone": "1234567890"}
         }
         data = {
-            'file': (io.BytesIO(b"fake pdf content"), 'test.pdf')
+            'file': (io.BytesIO(b"fake pdf content"), 'resume.pdf')
         }
         response = client.post('/', data=data, content_type='multipart/form-data')
         assert response.status_code == 200
