@@ -2,6 +2,7 @@ import pytest
 import io
 import json
 from app import create_app
+from app.resume_parser import ResumeParser
 import unittest.mock
 
 @pytest.fixture
@@ -12,46 +13,42 @@ def client():
         yield client
 
 def test_pdf_upload(client):
-    with unittest.mock.patch('app.resume_parser.parse_pdf') as mock_parse_pdf, \
-         unittest.mock.patch('app.resume_parser.extract_information') as mock_extract:
-        mock_parse_pdf.return_value = "Sample PDF content"
-        mock_extract.return_value = {
-            "skills": ["python", "java"],
-            "experience": ["Company A", "Company B"],
-            "education": ["University X"],
-            "contact_info": {"email": "test@example.com", "phone": "1234567890"}
-        }
+    with unittest.mock.patch.object(ResumeParser, 'parse_resume') as mock_parse:
+        mock_parse.return_value = (1, {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "1234567890",
+            "skills": "python,java",
+            "experience": "5 years of experience",
+            "education": "Bachelor's in Computer Science"
+        })
         data = {
-            'file': (io.BytesIO(b"fake pdf content"), 'test_resume.pdf')
+            'file': (io.BytesIO(b"%PDF-1.5 fake pdf content"), 'resume.pdf')
         }
         response = client.post('/', data=data, content_type='multipart/form-data')
         assert response.status_code == 200
         json_data = json.loads(response.data)
+        assert 'name' in json_data
         assert 'skills' in json_data
-        assert 'experience' in json_data
-        assert 'education' in json_data
-        assert 'contact_info' in json_data
 
 def test_docx_upload(client):
-    with unittest.mock.patch('app.resume_parser.parse_docx') as mock_parse_docx, \
-         unittest.mock.patch('app.resume_parser.extract_information') as mock_extract:
-        mock_parse_docx.return_value = "Sample DOCX content"
-        mock_extract.return_value = {
-            "skills": ["python", "java"],
-            "experience": ["Company A", "Company B"],
-            "education": ["University X"],
-            "contact_info": {"email": "test@example.com", "phone": "1234567890"}
-        }
+    with unittest.mock.patch.object(ResumeParser, 'parse_resume') as mock_parse:
+        mock_parse.return_value = (2, {
+            "name": "Jane Doe",
+            "email": "jane@example.com",
+            "phone": "0987654321",
+            "skills": "javascript,react",
+            "experience": "3 years of experience",
+            "education": "Master's in Computer Science"
+        })
         data = {
-            'file': (io.BytesIO(b"fake docx content"), 'test_resume.docx')
+            'file': (io.BytesIO(b"PK fake docx content"), 'resume.docx')
         }
         response = client.post('/', data=data, content_type='multipart/form-data')
         assert response.status_code == 200
         json_data = json.loads(response.data)
+        assert 'name' in json_data
         assert 'skills' in json_data
-        assert 'experience' in json_data
-        assert 'education' in json_data
-        assert 'contact_info' in json_data
 
 def test_invalid_file_upload(client):
     data = {

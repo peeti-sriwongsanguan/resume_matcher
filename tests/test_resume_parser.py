@@ -1,16 +1,15 @@
-import os
 import sys
+import os
 import json
 
-# Add the project root to the Python path
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_root)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.resume_parser import parse_resume
+from app.resume_parser import ResumeParser
 
 
 def test_resume_parser():
-    upload_dir = os.path.join(project_root, 'uploads')
+    parser = ResumeParser()
+    upload_dir = 'uploads'
 
     for filename in os.listdir(upload_dir):
         if filename.lower().endswith(('.pdf', '.docx')):
@@ -20,9 +19,15 @@ def test_resume_parser():
             print("-" * 50)
 
             with open(file_path, 'rb') as file:
-                result = parse_resume(file, filename)
+                resume_id, result = parser.parse_resume(file, filename)
 
-            print(json.dumps(result, indent=2))
+            if resume_id is None:
+                print(f"Failed to parse {filename}:")
+                print(json.dumps(result, indent=2))
+            else:
+                print(f"Successfully parsed {filename} (ID: {resume_id}):")
+                print(json.dumps(result, indent=2))
+
             print("\n")
 
 

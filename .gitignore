@@ -14,4 +14,9 @@ venv/
 # Setup.py
 /setup.py
 
+resume_matcher.db
+test.db
+*.db
+
+
 

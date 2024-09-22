@@ -4,6 +4,7 @@ import time
 import random
 import logging
 import re
+from app.database import DatabaseManager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -15,6 +16,7 @@ class IndeedJobScraper:
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
+        self.db_manager = DatabaseManager()
 
     def scrape_jobs(self, query, location, num_pages=1):
         all_jobs = []
@@ -27,6 +29,10 @@ class IndeedJobScraper:
                 soup = BeautifulSoup(response.content, 'html.parser')
                 jobs = self._parse_jobs(soup)
                 all_jobs.extend(jobs)
+
+                # Store jobs in the database
+                for job in jobs:
+                    self.db_manager.add_job(job)
             else:
                 logger.error(f"Failed to retrieve page {page + 1}. Status code: {response.status_code}")
 
@@ -49,10 +55,10 @@ class IndeedJobScraper:
                     'title': title.text.strip(),
                     'company': company.text.strip(),
                     'location': location.text.strip(),
-                    'link': 'https://www.indeed.com' + div.find('a')['href'] if div.find('a') else None,
+                    'url': 'https://www.indeed.com' + div.find('a')['href'] if div.find('a') else None,
                     'salary': salary.text.strip() if salary else 'Not provided',
                     'description': description.text.strip() if description else 'No description available',
-                    'skills': self._extract_skills(description.text if description else '')
+                    'skills': ','.join(self._extract_skills(description.text if description else ''))
                 }
                 job_listings.append(job_data)
 
@@ -72,7 +78,7 @@ class IndeedJobScraper:
         total_jobs = len(jobs)
         companies = set(job['company'] for job in jobs)
         locations = set(job['location'] for job in jobs)
-        all_skills = [skill for job in jobs for skill in job['skills']]
+        all_skills = [skill for job in jobs for skill in job['skills'].split(',')]
         top_skills = sorted(set(all_skills), key=all_skills.count, reverse=True)[:5]
 
         return {
@@ -82,21 +88,29 @@ class IndeedJobScraper:
             'top_skills': top_skills
         }
 
+    def scrape_and_store_jobs(self, query, location, num_pages=1):
+        jobs = self.scrape_jobs(query, location, num_pages)
+        summary = self.get_job_summary(jobs)
 
-if __name__ == "__main__":
+        logger.info("Job Scraping Summary:")
+        logger.info(f"Total Jobs: {summary['total_jobs']}")
+        logger.info(f"Unique Companies: {summary['unique_companies']}")
+        logger.info(f"Locations: {', '.join(summary['locations'])}")
+        logger.info(f"Top Skills: {', '.join(summary['top_skills'])}")
+
+        return summary
+
+
+def main():
     scraper = IndeedJobScraper()
-    jobs = scraper.scrape_jobs("software engineer", "New York", num_pages=2)
-    summary = scraper.get_job_summary(jobs)
-    print("Job Summary:")
-    print(f"Total Jobs: {summary['total_jobs']}")
+    summary = scraper.scrape_and_store_jobs("software engineer", "New York", num_pages=2)
+
+    print("\nJob Scraping Complete!")
+    print(f"Total Jobs Scraped: {summary['total_jobs']}")
     print(f"Unique Companies: {summary['unique_companies']}")
     print(f"Locations: {', '.join(summary['locations'])}")
     print(f"Top Skills: {', '.join(summary['top_skills'])}")
-    print("\nSample Job Listings:")
-    for job in jobs[:3]:  # Print first 3 jobs as a sample
-        print(f"\nTitle: {job['title']}")
-        print(f"Company: {job['company']}")
-        print(f"Location: {job['location']}")
-        print(f"Salary: {job['salary']}")
-        print(f"Skills: {', '.join(job['skills'])}")
-        print(f"Description: {job['description'][:100]}...")  # Print first 100 characters of description
+
+
+if __name__ == "__main__":
+    main()
