@@ -9,7 +9,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 
 def create_app(test_config=None):
-    app = Flask(__name__, template_folder='../templates')
+    app = Flask(__name__, static_folder='../static', template_folder='../templates')
 
     # Configuration
     app.config.from_mapping(

@@ -1,50 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume Matcher</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <h1>Resume Matcher</h1>
-    <form id="upload-form" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".pdf,.docx" required>
-        <button type="submit">Upload and Match</button>
-    </form>
-    <div id="results"></div>
-
-    <script>
-        document.getElementById('upload-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var formData = new FormData(this);
-            fetch('/', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    displayMatches(data.matches);
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-
-        function displayMatches(matches) {
-            var resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '<h2>Job Matches</h2>';
-            matches.forEach(match => {
-                resultsDiv.innerHTML += `
-                    <div class="job-match">
-                        <h3>${match.title} at ${match.company}</h3>
-                        <p>Match: ${match.match}%</p>
-                    </div>
-                `;
-            });
-        }
-    </script>
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+<h1>Upload Your Resume</h1>
+<form id="upload-form" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".pdf,.docx" required>
+    <button type="submit">Upload and Parse</button>
+</form>
+<div id="result"></div>
+{% endblock %}

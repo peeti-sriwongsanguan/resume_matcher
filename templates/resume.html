@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Parsed Resume</h1>
+<div class="resume-info">
+    <p><strong>Name:</strong> {{ resume.name }}</p>
+    <p><strong>Email:</strong> {{ resume.email }}</p>
+    <p><strong>Phone:</strong> {{ resume.phone }}</p>
+    <p><strong>Skills:</strong> {{ resume.skills }}</p>
+    <h2>Experience</h2>
+    <p>{{ resume.experience }}</p>
+    <h2>Education</h2>
+    <p>{{ resume.education }}</p>
+</div>
+<a href="{{ url_for('main.view_matches', resume_id=resume.id) }}">View Matched Jobs</a>
+{% endblock %}

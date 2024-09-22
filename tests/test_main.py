@@ -30,14 +30,14 @@ def test_file_upload(client):
         data = {
             'file': (io.BytesIO(b"%PDF-1.5 test file content"), 'test.pdf')
         }
-        response = client.post('/', data=data, content_type='multipart/form-data')
+        response = client.post('/upload', data=data, content_type='multipart/form-data')
         assert response.status_code == 200
         json_data = json.loads(response.data)
         assert 'name' in json_data
         assert 'skills' in json_data
 
 def test_no_file_upload(client):
-    response = client.post('/', data={}, content_type='multipart/form-data')
+    response = client.post('/upload', data={}, content_type='multipart/form-data')
     assert response.status_code == 200
     json_data = json.loads(response.data)
     assert 'error' in json_data
@@ -47,7 +47,7 @@ def test_invalid_file_type(client):
     data = {
         'file': (io.BytesIO(b"Invalid file content"), 'resume.txt')
     }
-    response = client.post('/', data=data, content_type='multipart/form-data')
+    response = client.post('/upload', data=data, content_type='multipart/form-data')
     assert response.status_code == 200
     json_data = json.loads(response.data)
     assert 'error' in json_data

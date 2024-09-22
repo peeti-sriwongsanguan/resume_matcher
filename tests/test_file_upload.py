@@ -25,7 +25,7 @@ def test_pdf_upload(client):
         data = {
             'file': (io.BytesIO(b"%PDF-1.5 fake pdf content"), 'resume.pdf')
         }
-        response = client.post('/', data=data, content_type='multipart/form-data')
+        response = client.post('/upload', data=data, content_type='multipart/form-data')
         assert response.status_code == 200
         json_data = json.loads(response.data)
         assert 'name' in json_data
@@ -44,7 +44,7 @@ def test_docx_upload(client):
         data = {
             'file': (io.BytesIO(b"PK fake docx content"), 'resume.docx')
         }
-        response = client.post('/', data=data, content_type='multipart/form-data')
+        response = client.post('/upload', data=data, content_type='multipart/form-data')
         assert response.status_code == 200
         json_data = json.loads(response.data)
         assert 'name' in json_data
@@ -54,14 +54,14 @@ def test_invalid_file_upload(client):
     data = {
         'file': (io.BytesIO(b"fake txt content"), 'test_resume.txt')
     }
-    response = client.post('/', data=data, content_type='multipart/form-data')
+    response = client.post('/upload', data=data, content_type='multipart/form-data')
     assert response.status_code == 200
     json_data = json.loads(response.data)
     assert 'error' in json_data
     assert json_data['error'] == 'File type not allowed'
 
 def test_no_file_upload(client):
-    response = client.post('/', data={}, content_type='multipart/form-data')
+    response = client.post('/upload', data={}, content_type='multipart/form-data')
     assert response.status_code == 200
     json_data = json.loads(response.data)
     assert 'error' in json_data
