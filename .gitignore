@@ -1,6 +1,7 @@
 .idea
 
 __pycache__
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
@@ -19,6 +20,13 @@ venv/
 resume_matcher.db
 test.db
 *.db
+
+notebook
+.ipynb_checkpoints/
+
+
+
+
 
 
 

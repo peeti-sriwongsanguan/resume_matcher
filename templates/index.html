@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Upload Your Resume</h1>
-<form id="upload-form" enctype="multipart/form-data">
+<form id="upload-form" action="/upload" enctype="multipart/form-data" method="POST">
     <input type="file" name="file" accept=".pdf,.docx" required>
     <button type="submit">Upload and Parse</button>
 </form>

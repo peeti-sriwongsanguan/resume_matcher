@@ -7,7 +7,6 @@ UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-
 def create_app(test_config=None):
     app = Flask(__name__, static_folder='../static', template_folder='../templates')
 
@@ -16,7 +15,7 @@ def create_app(test_config=None):
         SECRET_KEY='dev',
         UPLOAD_FOLDER=UPLOAD_FOLDER,
         MAX_CONTENT_LENGTH=16 * 1024 * 1024,  # 16MB max-limit
-        DATABASE_URI='sqlite:///resume_matcher.db'
+        DATABASE_PATH=os.path.join(app.instance_path, 'resume_matcher.db')
     )
 
     if test_config is None:
@@ -33,19 +32,15 @@ def create_app(test_config=None):
         pass
 
     # Initialize database
-    db_manager = DatabaseManager(app.config['DATABASE_URI'])
+    db_manager = DatabaseManager(app.config['DATABASE_PATH'])
     app.db_manager = db_manager
 
     # Initialize ResumeParser
-    resume_parser = ResumeParser()
+    resume_parser = ResumeParser(db_manager)
     app.resume_parser = resume_parser
 
     # Register blueprints
     from app import main
     app.register_blueprint(main.bp)
-
-    @app.route('/health')
-    def health_check():
-        return {'status': 'healthy'}, 200
 
     return app

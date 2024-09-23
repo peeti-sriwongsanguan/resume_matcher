@@ -1,5 +1,5 @@
 CONDA_ENV_NAME := resume-matcher
-CONDA_ACTIVATE := source $$(conda info --base)/etc/profile.d/conda.sh ; conda activate ; conda activate
+CONDA_ACTIVATE := source $$(conda info --base)/etc/profile.d/conda.sh && conda activate $(CONDA_ENV_NAME)
 
 export PYTHONPATH := $(CURDIR)
 
@@ -8,8 +8,6 @@ export PYTHONPATH := $(CURDIR)
 # Function to check if the environment exists and create it if it doesn't
 define ensure_environment
 	@echo "Current working directory: $$(pwd)"
-	@echo "Contents of current directory:"
-	@ls -la
 	@if ! conda info --envs | grep -q $(CONDA_ENV_NAME); then \
 		echo "Conda environment '$(CONDA_ENV_NAME)' not found. Creating it now..."; \
 		conda env create -f environment.yml; \
@@ -17,10 +15,12 @@ define ensure_environment
 		echo "Updating Conda environment '$(CONDA_ENV_NAME)'..."; \
 		conda env update -f environment.yml; \
 	fi
-	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && pip install --upgrade pip setuptools wheel
-	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && pip install --no-cache-dir -r requirements.txt
-	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && pip install --no-build-isolation spacy==3.7.6
-	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && python -m spacy download en_core_web_sm
+	@$(CONDA_ACTIVATE) && python -m spacy download en_core_web_sm
+	@if [ ! -f .env ]; then \
+		echo "WARNING: .env file not found. Please create a .env file with your Adzuna API credentials (ADZUNA_APP_ID and ADZUNA_API_KEY)."; \
+	else \
+		echo ".env file found. Ensure it contains your Adzuna API credentials."; \
+	fi
 endef
 
 build:
@@ -47,20 +47,19 @@ rebuild_env:
 	$(call ensure_environment)
 
 run_local: setup_env
-	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && python -m app.main
+	$(CONDA_ACTIVATE) && python run.py
 
 test_parser:
-	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && python -m tests.test_resume_parser
-
-test_local: setup_env test_parser test_job_scraper
-	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && PYTHONPATH=$(PYTHONPATH) pytest -v
+	$(CONDA_ACTIVATE) && python -m tests.test_resume_parser
 
 test_job_scraper:
-	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && python -m tests.test_job_scraper test_matching_engine test_database
+	$(CONDA_ACTIVATE) && python -m tests.test_job_scraper
 
 test_matching_engine:
-	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && python -m tests.test_matching_engine
+	$(CONDA_ACTIVATE) && python -m tests.test_matching_engine
 
 test_database:
-	$(CONDA_ACTIVATE) $(CONDA_ENV_NAME) && python -m tests.test_database
+	$(CONDA_ACTIVATE) && python -m tests.test_database
 
+test_local: setup_env test_parser test_job_scraper test_matching_engine test_database
+	$(CONDA_ACTIVATE) && PYTHONPATH=$(PYTHONPATH) pytest -v
