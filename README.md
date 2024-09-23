@@ -46,6 +46,8 @@ resume_matcher/
 └── README.md
 ```
 
+## How it works
+![make-run-resume-matcher.gif](image/make-run-resume-matcher.gif)
 ## Development Steps
 1. Set up project structure and environment
 2. Implement resume parsing functionality
